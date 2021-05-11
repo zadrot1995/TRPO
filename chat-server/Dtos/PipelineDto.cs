@@ -7,7 +7,7 @@ namespace chat_server.Dtos
 {
     public class PipelineDto
     {
-        public bool isProcessCenceled { get; set; }
-        public int Information { get; set; }
+        public int piplineId { get; set; }
+        public int componentId { get; set; }
     }
 }

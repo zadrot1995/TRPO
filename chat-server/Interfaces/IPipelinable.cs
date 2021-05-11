@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace chat_server.Interfaces
 {
-    interface IPipelinable
+    public interface IPipelinable
     {
-        abstract void Work(Circuite circuite, int time, int positiveDeviationTime, int negativeDeviationTime);
+        abstract void Work(Circuite circuite);
     }
 }

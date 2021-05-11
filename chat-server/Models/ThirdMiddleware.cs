@@ -9,11 +9,22 @@ namespace chat_server.Models
 {
     public class ThirdMiddleware : IPipelinable
     {
-        public void Work(Circuite circuite, int time, int positiveDeviationTime, int negativeDeviationTime)
+        public ThirdMiddleware(int time, int positiveDeviationTime, int negativeDeviationTime)
+        {
+            Time = time;
+            this.positiveDeviationTime = positiveDeviationTime;
+            this.negativeDeviationTime = negativeDeviationTime;
+        }
+
+        public int Time { get; set; }
+        public int positiveDeviationTime { get; set; }
+        public int negativeDeviationTime { get; set; }
+
+        public void Work(Circuite circuite)
         {
             Random random = new Random();
-            time = time + random.Next(negativeDeviationTime, positiveDeviationTime);
-            Thread.Sleep(time);
+            var time = Time + random.Next(negativeDeviationTime, positiveDeviationTime);
+            Thread.Sleep(time * 1000);
         }
     }
 }

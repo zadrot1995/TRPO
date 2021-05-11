@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using chat_server.Dtos;
+using chat_server.Factories;
 using chat_server.Models;
 using Microsoft.AspNetCore.SignalR;
 
@@ -10,10 +12,10 @@ namespace chat_server
     public class ChatHub : Hub<IChatHub>
     {
         public bool Started = false;
-        CencelTaskModel cencelTaskModel = new CencelTaskModel(); 
+        CencelTaskModel cencelTaskModel = new CencelTaskModel();
         CancellationTokenSource source = new CancellationTokenSource();
-
-
+        private CircuiteFactory circuiteFactory = new CircuiteFactory();
+        private List<Pipeline> pipelines;
 
         CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 
@@ -26,39 +28,52 @@ namespace chat_server
         //    }
 
         //}
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            CencelHelper.cancelTokenSource.Cancel();
+            return base.OnDisconnectedAsync(exception);
+        }
+
         public async Task StartAsync(string connection)
         {
-
-            PipelineDto pipelineDto = new PipelineDto();
+            pipelines = circuiteFactory.GetDefaultCircuitePipelines();
             CencelHelper.cancelTokenSource = new CancellationTokenSource();
 
-            Task task1 = new Task(() =>
-            {
-                //if (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
-                //{
-                    int i = 0;
-                    while (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
+            //Task task1 = new Task(() =>
+            //{
+
+            //    while (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
+            //    {
+                    Task pipeline1Work = new Task(()=> 
                     {
-                        pipelineDto.Information = i;
+                        startPipeline(0, connection);
+                    });
 
-                        Clients.Client(connection).MessageReceivedFromHub(pipelineDto);
-                        Thread.Sleep(3000);
-                        i++;
-                    }
-                //}
+                    Task pipeline2Work = new Task(() =>
+                    {
+                        startPipeline(1, connection);
+                    });
+                    Task pipeline3Work = new Task(() =>
+                    {
+                        startPipeline(2, connection);
+                    });
+                    Task pipeline4Work = new Task(() =>
+                    {
+                        startPipeline(3, connection);
+                    });
 
-            });
-            task1.Start();
+                    pipeline1Work.Start();
+                    pipeline2Work.Start();
+                    pipeline3Work.Start();
+                    pipeline4Work.Start();
 
 
 
 
 
-
-
-
-
-
+            //    }
+            //});
+            //task1.Start();
 
         }
         public void StopAsync()
@@ -68,7 +83,22 @@ namespace chat_server
         }
         public override async Task OnConnectedAsync()
         {
-           
+
+        }
+
+        private void startPipeline(int pipelineId, string connection)
+        {
+            for (int componentId = 0; componentId < pipelines[pipelineId].ComponentsContainer.Count; componentId++)
+            {
+                if (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
+                {
+
+                    Clients.Client(connection).MessageReceivedFromHub(new PipelineDto { piplineId = pipelineId, componentId = componentId });
+                    Circuite circuite = new Circuite();
+                    pipelines[pipelineId].ComponentsContainer[componentId].Work(circuite);
+                }
+
+            }
         }
 
 
