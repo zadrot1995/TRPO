@@ -39,16 +39,15 @@ namespace chat_server
             pipelines = circuiteFactory.GetDefaultCircuitePipelines();
             CencelHelper.cancelTokenSource = new CancellationTokenSource();
 
-            //Task task1 = new Task(() =>
-            //{
+            Task task1 = new Task(() =>
+            {
 
-            //    while (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
-            //    {
-                    Task pipeline1Work = new Task(()=> 
+                while (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
+                {
+                    Task pipeline1Work = new Task(() =>
                     {
                         startPipeline(0, connection);
                     });
-
                     Task pipeline2Work = new Task(() =>
                     {
                         startPipeline(1, connection);
@@ -67,14 +66,16 @@ namespace chat_server
                     pipeline3Work.Start();
                     pipeline4Work.Start();
 
+                    pipeline1Work.Wait();
+                    pipeline2Work.Wait();
+                    pipeline3Work.Wait();
+                    pipeline4Work.Wait();
 
 
-
-
-            //    }
-            //});
-            //task1.Start();
-
+                }
+            });
+            task1.Start();
+            task1.Wait();
         }
         public void StopAsync()
         {
@@ -88,17 +89,25 @@ namespace chat_server
 
         private void startPipeline(int pipelineId, string connection)
         {
-            for (int componentId = 0; componentId < pipelines[pipelineId].ComponentsContainer.Count; componentId++)
-            {
+            
+
                 if (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
                 {
+                    for (int componentId = 0; componentId < pipelines[pipelineId].ComponentsContainer.Count; componentId++)
+                    {
+                        if (!CencelHelper.cancelTokenSource.Token.IsCancellationRequested)
+                        {
 
-                    Clients.Client(connection).MessageReceivedFromHub(new PipelineDto { piplineId = pipelineId, componentId = componentId });
-                    Circuite circuite = new Circuite();
-                    pipelines[pipelineId].ComponentsContainer[componentId].Work(circuite);
+                        
+                        Clients.Client(connection).MessageReceivedFromHub(new PipelineDto { piplineId = pipelineId, componentId = componentId });
+                            Circuite circuite = new Circuite();
+                            pipelines[pipelineId].ComponentsContainer[componentId].Work(circuite);
+                        }
+
+                    }
                 }
-
-            }
+            
+           
         }
 
 
