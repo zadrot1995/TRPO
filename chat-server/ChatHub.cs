@@ -46,18 +46,31 @@ namespace chat_server
                 {
                     Task pipeline1Work = new Task(() =>
                     {
+
+                        Random random = new Random();
+                        var time = 10 + random.Next(-2, 2);
+                        Thread.Sleep(time * 1000);
                         startPipeline(0, connection);
                     });
                     Task pipeline2Work = new Task(() =>
                     {
+                        Random random = new Random();
+                        var time = 10 + random.Next(-2, 2);
+                        Thread.Sleep(time * 1000);
                         startPipeline(1, connection);
                     });
                     Task pipeline3Work = new Task(() =>
                     {
+                        Random random = new Random();
+                        var time = 10 + random.Next(-2, 2);
+                        Thread.Sleep(time * 1000);
                         startPipeline(2, connection);
                     });
                     Task pipeline4Work = new Task(() =>
                     {
+                        Random random = new Random();
+                        var time = 10 + random.Next(-2, 2);
+                        Thread.Sleep(time * 1000);
                         startPipeline(3, connection);
                     });
 

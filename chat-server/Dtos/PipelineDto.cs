@@ -9,5 +9,6 @@ namespace chat_server.Dtos
     {
         public int piplineId { get; set; }
         public int componentId { get; set; }
+
     }
 }
